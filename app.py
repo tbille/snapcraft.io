@@ -198,6 +198,11 @@ def search_snap():
     return public_views.search_snap()
 
 
+@app.route('/_error')
+def error_test():
+    return public_views.search_snap
+
+
 @app.route('/<snap_name>')
 def snap_details(snap_name):
     return public_views.snap_details(snap_name)
