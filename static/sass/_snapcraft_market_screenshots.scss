@@ -27,23 +27,6 @@
         outline: 1px solid $color-focus;
         outline-offset: 2px;
       }
-
-      &__delete,
-      &__revert {
-        position: absolute;
-        right: 1px;
-        top: 1px;
-        padding: $sp-x-small;
-        margin-top: 0;
-        background: $color-x-light;
-        border-radius: 3px;
-        opacity: .4;
-      }
-
-      &__revert {
-        display: none;
-        opacity: 1;
-      }
     }
 
     .p-screenshot[src^='blob'] {
@@ -70,6 +53,7 @@
 
       .p-screenshot {
         filter: grayscale(100%);
+        opacity: .6;
       }
     }
   }

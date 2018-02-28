@@ -20,8 +20,6 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
   const screenshotsWrapper = document.getElementById(screenshotsWrapperElId);
   const screenshotsStatus = document.getElementById(screenshotsStatusElId);
 
-  let files;
-
   // simple state handling (and serializing as JSON in hidden input)
   const state = {};
   const stateInput = document.createElement('input');
@@ -47,7 +45,7 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
   setState(initialState);
 
   // actions on state
-  const addScreenshots = () => {
+  const addScreenshots = (files) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       setState({
@@ -64,8 +62,7 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
   const deleteScreenshot = (screenshot) => {
     if (screenshot.status === 'new') {
       const index = state.images.findIndex(image => image.selected);
-      const image = state.images.splice(index, 1);
-      files = files.filter(file => file.url !== image.url);
+      state.images.splice(index, 1);
     } else {
       screenshot._previousStatus = screenshot.status;
       screenshot.status = 'delete';
@@ -79,7 +76,7 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
 
     const screenshot = state.images.filter(image => image.url === url)[0];
 
-    if (url && screenshot) {
+    if (url && screenshot && screenshot.status !== 'delete') {
       screenshot.selected = true;
     }
   };
@@ -93,12 +90,6 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
           src="${screenshot.url}"
           alt=""
         />
-        <a class="p-screenshot__delete js-delete-screenshot" data-src="${screenshot.url}">
-          <i class="p-icon--delete"></i>
-        </a>
-        <a class="p-screenshot__revert js-revert-screenshot" data-src="${screenshot.url}">
-          <i class="p-icon--plus"></i>
-        </a>
       </div>
     </div>
   `;
@@ -114,15 +105,18 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
       return '';
     }
     return `<p>
-        ${newCount ? newCount + ' new. ' : ''}
-        ${deleteCount ? deleteCount + ' to delete.' : ''}
+      ${newCount
+          ? newCount + ' image' + (newCount > 1 ? 's' : '') + ' to upload. '
+          : ''}
+      ${deleteCount
+          ? deleteCount + ' image' + (deleteCount > 1 ? 's' : '') + ' to delete.'
+          : ''}
     </p>`;
   };
 
   const renderScreenshots = (screenshots) => {
     if (screenshots.length) {
-      screenshotsWrapper.innerHTML = screenshots.map(screenshotTpl).join("")
-       ;
+      screenshotsWrapper.innerHTML = screenshots.map(screenshotTpl).join("");
     } else {
       screenshotsWrapper.innerHTML = emptyTpl();
     }
@@ -131,11 +125,19 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
   const render = () => {
     const screenshots = state.images.filter(image => image.type === 'screenshot');
     renderScreenshots(screenshots);
+
     if (screenshots.length === 5) {
       document.querySelector('.js-add-screenshots').setAttribute('disabled', 'disabled');
     } else {
       document.querySelector('.js-add-screenshots').removeAttribute('disabled');
     }
+
+    if (screenshots.filter(image => image.selected).length === 0) {
+      document.querySelector('.js-delete-screenshot').setAttribute('disabled', 'disabled');
+    } else {
+      document.querySelector('.js-delete-screenshot').removeAttribute('disabled');
+    }
+
     const newScreenshots = screenshots.filter(image => image.status === 'new').length;
     const deleteScreenshots = screenshots.filter(image => image.status === 'delete').length;
     screenshotsStatus.innerHTML = changesTpl(newScreenshots, deleteScreenshots);
@@ -144,14 +146,24 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
   render();
 
   const onScreenshotsChange = function() {
-    files = this.files;
-    addScreenshots();
+    addScreenshots(this.files);
     render();
   };
 
   // delegated click handlers
   document.addEventListener("click", function(event){
-    if (event.target.classList.contains('js-fullscreen-screenshot')
+    // Delete screenshot
+    if (event.target.classList.contains('js-delete-screenshot')
+        || event.target.parentNode.classList.contains('js-delete-screenshot')
+       ) {
+      event.preventDefault();
+      let screenshot = state.images.filter(image => image.selected)[0];
+      if (screenshot) {
+        deleteScreenshot(screenshot);
+        selectScreenshot();
+      }
+      render();
+    } else if (event.target.classList.contains('js-fullscreen-screenshot')
         || (event.target.parentNode && event.target.parentNode.classList.contains('js-fullscreen-screenshot'))
       ) {
       event.preventDefault();
@@ -171,31 +183,6 @@ function initSnapScreenshotsEdit(screenshotsToolbarElId, screenshotsWrapperElId,
     } else {
       // unselect any screenshots when clicked outside of them
       selectScreenshot();
-    }
-
-    // Delete screenshot
-    if (event.target.classList.contains('js-delete-screenshot')
-        || event.target.parentNode.classList.contains('js-delete-screenshot')
-       ) {
-      event.preventDefault();
-      const holder = event.target.parentNode.classList.contains('p-screenshot__holder') ? event.target.parentNode : event.target.parentNode.parentNode;
-      selectScreenshot(holder.querySelector('img').src);
-      let screenshot = state.images.filter(image => image.selected)[0];
-      deleteScreenshot(screenshot);
-      render();
-    }
-
-    // Revert screenshot
-    if (event.target.classList.contains('js-revert-screenshot')
-        || event.target.parentNode.classList.contains('js-revert-screenshot')
-       ) {
-      event.preventDefault();
-      const holder = event.target.parentNode.classList.contains('p-screenshot__holder') ? event.target.parentNode : event.target.parentNode.parentNode;
-      selectScreenshot(holder.querySelector('img').src);
-      let screenshot = state.images.filter(image => image.selected)[0];
-      screenshot.status = screenshot._previousStatus;
-      setState();
-      render();
     }
 
     // clicking on [+] add screenshots button
