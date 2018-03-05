@@ -218,29 +218,32 @@ def post_market_snap(snap_name):
         images_json = None
 
         # Add existing screenshots
-        screenshots_uploaded = api.snap_screenshots(
+        current_screenshots = api.snap_screenshots(
             snap_id
         )
         state_screenshots = loads(flask.request.form['state'])['images']
-        for screenshot in state_screenshots:
-            for screenshot_uploaded in screenshots_uploaded:
-                if screenshot['url'] == screenshot_uploaded['url']:
-                    info.append(screenshot_uploaded)
+        for state_screenshot in state_screenshots:
+            for current_screenshot in current_screenshots:
+                if state_screenshot['url'] == current_screenshot['url']:
+                    info.append(current_screenshot)
 
+        # Add new icon
         icon = flask.request.files.get('icon')
         if icon is not None:
             info.append(build_image_info(icon, 'icon'))
             images_files.append(icon)
 
-        screenshots = flask.request.files.getlist('screenshots')
-        for screenshot in screenshots:
+        # Add new screenshots
+        new_screenshots = flask.request.files.getlist('screenshots')
+        for new_screenshot in new_screenshots:
             for state_screenshot in state_screenshots:
-                if state_screenshot['name'] == screenshot.filename:
-                    info.append(build_image_info(screenshot, 'screenshot'))
-                    images_files.append(screenshot)
+                is_new = state_screenshot['status'] == 'new'
+                is_same = state_screenshot['name'] == new_screenshot.filename
+                if is_new and is_same:
+                    info.append(build_image_info(new_screenshot, 'screenshot'))
+                    images_files.append(new_screenshot)
 
         images_json = {'info': dumps(info)}
-
         screenshots_response = api.snap_screenshots(
             snap_id,
             images_json,

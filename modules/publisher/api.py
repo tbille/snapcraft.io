@@ -2,7 +2,6 @@ import flask
 import modules.authentication as authentication
 import modules.cache as cache
 import os
-from json import dumps
 
 
 DASHBOARD_API = os.getenv(
@@ -199,8 +198,9 @@ def snap_screenshots(snap_id, data=None, files=None):
     headers = get_authorization_header()
     headers['Accept'] = 'application/json'
 
-    if data is not None:
+    if data:
         method = 'PUT'
+
         files_array = []
         if files:
             for f in files:
@@ -210,7 +210,8 @@ def snap_screenshots(snap_id, data=None, files=None):
         else:
             # API requires a multipart request, but we have no files to push
             # https://github.com/requests/requests/issues/1081
-            files_array = {'info': ('', dumps([]))}
+            files_array = {'info': ('', data['info'])}
+            data = None
 
     screenshot_response = cache.get(
         SCREENSHOTS_QUERY_URL.format(snap_id=snap_id),
