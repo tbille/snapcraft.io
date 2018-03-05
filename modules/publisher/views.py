@@ -234,15 +234,12 @@ def post_market_snap(snap_name):
 
         screenshots = flask.request.files.getlist('screenshots')
         for screenshot in screenshots:
-            info.append(build_image_info(screenshot, 'screenshot'))
-            images_files.append(screenshot)
+            for state_screenshot in state_screenshots:
+                if state_screenshot['name'] == screenshot.filename:
+                    info.append(build_image_info(screenshot, 'screenshot'))
+                    images_files.append(screenshot)
 
-        if not images_files:
-            # API requires a multipart request, but we have no files to push
-            # https://github.com/requests/requests/issues/1081
-            images_files = {'info': ('', dumps(info))}
-        else:
-            images_json = {'info': dumps(info)}
+        images_json = {'info': dumps(info)}
 
         screenshots_response = api.snap_screenshots(
             snap_id,

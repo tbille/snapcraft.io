@@ -213,8 +213,9 @@
     "screenshots-status",
     {
       images: [
-        { url: {{ icon_url|tojson }}, type: "icon" },
-
+        {% if icon_url %}
+          { url: {{ icon_url|tojson }}, type: "icon" },
+        {% endif %}
         {% for screenshot_url in screenshot_urls %}
           { url: {{ screenshot_url|tojson }}, type: "screenshot", status: "uploaded" },
         {% endfor %}
