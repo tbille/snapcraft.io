@@ -237,8 +237,11 @@ def post_market_snap(snap_name):
         new_screenshots = flask.request.files.getlist('screenshots')
         for new_screenshot in new_screenshots:
             for state_screenshot in state_screenshots:
-                is_new = state_screenshot['status'] == 'new'
-                is_same = is_new and state_screenshot['name'] == new_screenshot.filename
+                is_same = (
+                    state_screenshot['status'] == 'new'
+                    and state_screenshot['name'] == new_screenshot.filename
+                )
+
                 if is_same:
                     info.append(build_image_info(new_screenshot, 'screenshot'))
                     images_files.append(new_screenshot)
