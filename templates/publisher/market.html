@@ -214,7 +214,7 @@
     {
       images: [
         {% if icon_url %}
-          { url: {{ icon_url|tojson }}, type: "icon" },
+          { url: {{ icon_url|tojson }}, type: "icon", status: "uploaded" },
         {% endif %}
         {% for screenshot_url in screenshot_urls %}
           { url: {{ screenshot_url|tojson }}, type: "screenshot", status: "uploaded" },

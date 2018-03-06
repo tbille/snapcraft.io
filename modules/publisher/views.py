@@ -238,8 +238,8 @@ def post_market_snap(snap_name):
         for new_screenshot in new_screenshots:
             for state_screenshot in state_screenshots:
                 is_new = state_screenshot['status'] == 'new'
-                is_same = state_screenshot['name'] == new_screenshot.filename
-                if is_new and is_same:
+                is_same = is_new and state_screenshot['name'] == new_screenshot.filename
+                if is_same:
                     info.append(build_image_info(new_screenshot, 'screenshot'))
                     images_files.append(new_screenshot)
 
