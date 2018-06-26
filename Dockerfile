@@ -23,6 +23,11 @@ ARG WEBAPP
 RUN test -n "${WEBAPP}"
 ENV WEBAPP "${WEBAPP}"
 
+# Set if the blog should be enabled
+ARG BLOG_ENABLED
+RUN test -n "${BLOG_ENABLED}"
+ENV BLOG_ENABLED "${BLOG_ENABLED}"
+
 # Setup commands to run server
 ENTRYPOINT ["talisker.gunicorn", "webapp.app:create_app()", "--access-logfile", "-", "--error-logfile", "-", "--bind"]
 CMD ["0.0.0.0:80"]
