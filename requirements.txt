@@ -16,12 +16,11 @@ pybreaker==0.4.4
 pycountry==17.9.23
 pymacaroons==0.12.0
 python-dateutil==2.6.1
-raven[flask]==6.5.0
 requests==2.21.0
 requests-cache==0.4.13
 responses==0.9.0
 ruamel.yaml==0.15.72
-talisker[gunicorn]==0.14.3
+talisker[gunicorn, raven]==0.15.0
 
 # Temporary fix to SSO redirect issue
 Werkzeug==0.14.1
